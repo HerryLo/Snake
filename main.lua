@@ -15,7 +15,7 @@ TILE_BODY = 2
 TILE_APPLE = 3
 
 -- sanke remove speed
-SNAKE_SPEED = 0.5
+SNAKE_SPEED = 0.2
 
 -- init
 local tileGird = {}
@@ -57,13 +57,29 @@ function love.update(dt)
     -- update move
     if snakeTimer >= SNAKE_SPEED then
         if snakeMoveing == 'left' then
-            snakex = snakex - 1
+            if snakex <= 1 then
+                snakex = MAX_TILE_X
+            else
+                snakex = snakex - 1
+            end
         elseif snakeMoveing == 'right' then
-            snakex = snakex + 1
+            if snakex >= MAX_TILE_X then
+                snakex = 1
+            else
+                snakex = snakex + 1
+            end
         elseif snakeMoveing == 'up' then
-            snakey = snakey - 1
+            if snakey <= 1 then
+                snakey = MAX_TILE_Y
+            else
+                snakey = snakey - 1
+            end
         elseif snakeMoveing == 'down' then
-            snakey = snakey + 1
+            if snakey >= MAX_TILE_Y then
+                snakey = 1
+            else
+                snakey = snakey + 1
+            end
         end
         snakeTimer = 0
     end
@@ -88,8 +104,8 @@ function drawgrid()
             if tileGird[y][x] == TILE_EMPTY then
 
                 -- change the colorto white for grid
-                love.graphics.setColor(1, 1, 1, 1)
-                love.graphics.rectangle('line', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
+                -- love.graphics.setColor(1, 1, 1, 1)
+                -- love.graphics.rectangle('line', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
             elseif tileGird[y][x] == TILE_APPLE then
 
                 -- change the colorto red for apple
