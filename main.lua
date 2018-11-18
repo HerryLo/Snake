@@ -10,26 +10,39 @@ MAX_TILE_Y = math.floor(WINDOW_HEIGHT/TILE_SIZE) - 1
 
 -- tile state 瓦片状态
 TILE_EMPTY = 0
-TILE_HEAD = 1
-TILE_BODY = 2
+TILE_SNAKE_HEAD = 1
+TILE_SNAKE_BODY = 2
 TILE_APPLE = 3
 
 -- sanke remove speed
 SNAKE_SPEED = 0.2
+
+-- font size
+local largeFont = love.graphics.newFont(32)
 
 -- init
 local tileGird = {}
 local snakex, snakey = 1,1
 local snakeMoveing = 'right'
 local snakeTimer = 0
+local score = 0
+
+local snakeTiles = {
+    { snakex, snakey }
+}
 
 -- load
 function love.load()
     love.window.setTitle('Snake')
+
+    love.graphics.setFont(largeFont)
+
     love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT , {
         fullscreen = false
     })
     initializeGird()
+
+    tileGird[snakeTiles[1][2]][snakeTiles[1][1]] = TILE_SNAKE_HEAD
 end
 
 -- keypressed
@@ -54,6 +67,8 @@ end
 function love.update(dt)
     snakeTimer = snakeTimer + dt
     -- print(snakeTimer)
+
+    local priorHeadX, priorHeadY = snakex, snakey
     -- update move
     if snakeTimer >= SNAKE_SPEED then
         if snakeMoveing == 'left' then
@@ -81,14 +96,44 @@ function love.update(dt)
                 snakey = snakey + 1
             end
         end
+
+        -- check for apple and add a score
+        if tileGird[snakey][snakex] == TILE_APPLE then
+            score = score+1
+
+            -- create a new apple
+            createApple()
+
+            -- if #snakeTiles > 1 then
+                table.insert(snakeTiles, 1, {snakex, snakey})
+                tileGird[snakey][snakex] = TILE_SNAKE_HEAD
+                tileGird[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
+            -- end
+        end
+
+        -- update the sname head
+        tileGird[snakey][snakex] = TILE_SNAKE_HEAD
+
+        if #snakeTiles > 1 then 
+            local tail = snakeTiles[#snakeTiles]
+            tileGird[tail[2]][tail[1]] = TILE_EMPTY
+            tileGird[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
+            table.insert(snakeTiles, 1, {snakex, snakey})
+        else
+            tileGird[priorHeadY][priorHeadX] = TILE_EMPTY
+        end
+
         snakeTimer = 0
     end
 end
 
 -- draw
 function love.draw()
-    drawSnake()
+    -- drawSnake()
     drawgrid()
+
+    love.graphics.setColor(1,1,1,1)
+    love.graphics.print('Score: ' .. tostring(score), 10, 10)
 end
 
 -- draw snake
@@ -111,6 +156,18 @@ function drawgrid()
                 -- change the colorto red for apple
                 love.graphics.setColor(1, 0, 0, 1)
                 love.graphics.rectangle('fill', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
+
+            elseif tileGird[y][x] == TILE_SNAKE_HEAD then
+
+                -- change the color red for snake head
+                love.graphics.setColor(0, 1, 0.5, 1)
+                love.graphics.rectangle('fill', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
+
+            elseif tileGird[y][x] == TILE_SNAKE_BODY then
+
+                -- change the color red for snake BODY
+                love.graphics.setColor(0, 1, 0, 1)
+                love.graphics.rectangle('fill', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
             end
         end
     end
@@ -128,6 +185,12 @@ function initializeGird()
         end
     end
 
+    -- init create a apple
+    createApple()
+end
+
+-- create a apple
+function createApple()
     local applex , appley = math.random(MAX_TILE_X),  math.random(MAX_TILE_Y)
     tileGird[appley][applex] = TILE_APPLE
 end
