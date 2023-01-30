@@ -5,7 +5,9 @@ WINDOW_WIDTH = 1280
 -- height
 WINDOW_HEIGHT = 720
 
-MAX_TILE_X = WINDOW_WIDTH/TILE_SIZE
+GEME_WINDOW_WIDTH = 1080
+
+MAX_TILE_X = GEME_WINDOW_WIDTH/TILE_SIZE
 MAX_TILE_Y = math.floor(WINDOW_HEIGHT/TILE_SIZE) - 1
 
 -- tile state 瓦片状态
@@ -33,7 +35,7 @@ local snakeTiles = {
 
 -- load
 function love.load()
-    love.window.setTitle('Snake')
+    love.window.setTitle('Snake 贪吃蛇')
 
     love.graphics.setFont(largeFont)
 
@@ -97,6 +99,8 @@ function love.update(dt)
             end
         end
 
+        local len = table.maxn(snakeTiles)
+        
         -- check for apple and add a score
         if tileGird[snakey][snakex] == TILE_APPLE then
             score = score+1
@@ -104,21 +108,23 @@ function love.update(dt)
             -- create a new apple
             createApple()
 
-            -- if #snakeTiles > 1 then
-                table.insert(snakeTiles, 1, {snakex, snakey})
-                tileGird[snakey][snakex] = TILE_SNAKE_HEAD
-                tileGird[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
-            -- end
+            -- update snake
+            table.insert(snakeTiles, 1, {snakex, snakey})
+            tileGird[snakeTiles[1][2]][snakeTiles[1][1]] = TILE_SNAKE_HEAD
+        else
+            -- update snake
+            table.insert(snakeTiles, 1, {snakex, snakey})
+            -- remove end snake
+            table.remove(snakeTiles, len+1)
         end
 
         -- update the sname head
-        tileGird[snakey][snakex] = TILE_SNAKE_HEAD
+        tileGird[snakeTiles[1][2]][snakeTiles[1][1]] = TILE_SNAKE_HEAD
 
         if #snakeTiles > 1 then 
+            tileGird[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
             local tail = snakeTiles[#snakeTiles]
             tileGird[tail[2]][tail[1]] = TILE_EMPTY
-            tileGird[priorHeadY][priorHeadX] = TILE_SNAKE_BODY
-            table.insert(snakeTiles, 1, {snakex, snakey})
         else
             tileGird[priorHeadY][priorHeadX] = TILE_EMPTY
         end
@@ -132,8 +138,13 @@ function love.draw()
     -- drawSnake()
     drawgrid()
 
+    drawLine()
+
     love.graphics.setColor(1,1,1,1)
-    love.graphics.print('Score: ' .. tostring(score), 10, 10)
+    love.graphics.print('Score: ' .. tostring(score), GEME_WINDOW_WIDTH, 0)
+    -- for i = 1, #snakeTiles  do 
+    --     love.graphics.print(snakeTiles[i], 10, 32*i)
+    -- end
 end
 
 -- draw snake
@@ -160,7 +171,7 @@ function drawgrid()
             elseif tileGird[y][x] == TILE_SNAKE_HEAD then
 
                 -- change the color red for snake head
-                love.graphics.setColor(0, 1, 0.5, 1)
+                love.graphics.setColor(1, 1, 0.5, 1)
                 love.graphics.rectangle('fill', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
 
             elseif tileGird[y][x] == TILE_SNAKE_BODY then
@@ -170,6 +181,18 @@ function drawgrid()
                 love.graphics.rectangle('fill', (x - 1)*TILE_SIZE, (y - 1) * TILE_SIZE ,TILE_SIZE, TILE_SIZE)
             end
         end
+    end
+end
+
+-- draw table line
+function drawLine()
+    for x = 1, MAX_TILE_X  do
+        love.graphics.setColor(0, 1, 0, 1)
+        love.graphics.line(TILE_SIZE*x, 0, TILE_SIZE*x, WINDOW_HEIGHT)
+    end
+    for y = 1, MAX_TILE_Y  do
+        love.graphics.setColor(0, 1, 0, 1)
+        love.graphics.line(0, TILE_SIZE*y, GEME_WINDOW_WIDTH-25, TILE_SIZE*y)
     end
 end
 
