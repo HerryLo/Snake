@@ -30,8 +30,6 @@ $ love .
 ### 第三步：合并生成exe
 打开命令提示符（cmd），进入LÖVE文件夹：
 
-
-
 ```bash
 cd C:\love2d
 ```
